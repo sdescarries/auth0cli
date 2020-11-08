@@ -14,6 +14,7 @@ export function getSessionFilePath(clientId: string = config.clientId): string {
 
 export interface Session {
   accessToken: string;
+  expiresAt: Date;
   expiresIn: number;
   refreshToken: string;
   tokenType: string;

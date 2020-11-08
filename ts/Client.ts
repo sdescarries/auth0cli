@@ -9,8 +9,8 @@ import { loadSession, saveSession, Session } from "./Session.ts";
 
 export interface BasicParams {
   clientId?: string;
-  domain?: string;
   clientSecret?: string;
+  domain?: string;
 }
 
 export interface LoginParams extends BasicParams {
@@ -20,21 +20,43 @@ export interface LoginParams extends BasicParams {
   username?: string;
 }
 
-export const login = (params: LoginParams) =>
+export const login = ({
+  audience,
+  clientId,
+  clientSecret,
+  domain,
+  password,
+  realm,
+  username,
+}: LoginParams) =>
   authFetch({
-    ...params,
+    audience,
+    clientId,
+    clientSecret,
+    domain,
     grantType: "http://auth0.com/oauth/grant-type/password-realm",
+    password,
+    realm,
     scope: "offline_access",
+    username,
   });
 
 export interface RefreshParams extends BasicParams {
   refreshToken?: string;
 }
 
-export const refresh = (params: RefreshParams) =>
+export const refresh = ({
+  clientId,
+  clientSecret,
+  domain,
+  refreshToken,
+}: RefreshParams) =>
   authFetch({
-    ...params,
+    clientId,
+    clientSecret,
+    domain,
     grantType: "refresh_token",
+    refreshToken,
   });
 
 export async function authFetch(params: Params): Promise<boolean> {
@@ -59,6 +81,7 @@ export async function authFetch(params: Params): Promise<boolean> {
     },
   );
 
+  const now = Date.now();
   const response = await fetch(
     url,
     {
@@ -70,6 +93,7 @@ export async function authFetch(params: Params): Promise<boolean> {
 
   const sessionRaw = await response.json();
   const session = <Session> <unknown> convertToCamelCase(sessionRaw);
+  session.expiresAt = new Date(now + session.expiresIn);
 
   if (response.status == 200) {
     await saveSession(session);

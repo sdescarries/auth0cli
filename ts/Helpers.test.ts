@@ -6,6 +6,7 @@ import {
   convertToUnderscore,
   toCamelCase,
   toUnderscore,
+  validateParams,
 } from "./Helpers.ts";
 
 Deno.test("toUnderscore", () => {
@@ -26,4 +27,14 @@ Deno.test("convertToUnderscore", () => {
 Deno.test("convertToCamelCase", () => {
   const res = convertToCamelCase({ "foo_bar": "is baz" });
   assertEquals(res, { fooBar: "is baz" });
+});
+
+Deno.test("validateParams success", () => {
+  const res = validateParams({ foo: "foo", bar: "bar" });
+  assertEquals(res, true);
+});
+
+Deno.test("validateParams failure", () => {
+  const res = validateParams({ foo: undefined, bar: "" });
+  assertEquals(res, false);
 });

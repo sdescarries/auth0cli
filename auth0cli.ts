@@ -1,4 +1,4 @@
-#!/usr/bin/env deno run --allow-env --allow-net --allow-read --allow-write
+#!/usr/bin/env deno run --quiet --log-level info --allow-env --allow-net --allow-read --allow-write
 
 import config from "./ts/Config.ts";
 import { login, refresh } from "./ts/Client.ts";
