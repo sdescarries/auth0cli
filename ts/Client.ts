@@ -1,11 +1,14 @@
-import config from "./Config.ts";
 import {
   convertToCamelCase,
   convertToUnderscore,
   Params,
   validateParams,
 } from "./Helpers.ts";
-import { loadSession, saveSession, Session } from "./Session.ts";
+import {
+  SaveSession,
+  saveSession as implementation,
+  Session,
+} from "./Session.ts";
 
 export interface BasicParams {
   clientId?: string;
@@ -20,48 +23,69 @@ export interface LoginParams extends BasicParams {
   username?: string;
 }
 
-export const login = ({
-  audience,
-  clientId,
-  clientSecret,
-  domain,
-  password,
-  realm,
-  username,
-}: LoginParams) =>
-  authFetch({
-    audience,
-    clientId,
-    clientSecret,
-    domain,
-    grantType: "http://auth0.com/oauth/grant-type/password-realm",
-    password,
-    realm,
-    scope: "offline_access",
-    username,
-  });
-
 export interface RefreshParams extends BasicParams {
   refreshToken?: string;
 }
 
-export const refresh = ({
-  clientId,
-  clientSecret,
-  domain,
-  refreshToken,
-}: RefreshParams) =>
-  authFetch({
-    clientId,
-    clientSecret,
-    domain,
-    grantType: "refresh_token",
-    refreshToken,
-  });
+export interface ApiFetch {
+  (
+    input: Request | URL | string,
+    init?: RequestInit,
+  ): Promise<Response>;
+}
 
-export async function authFetch(params: Params): Promise<boolean> {
-  if (!validateParams(params)) {
-    return Promise.resolve(false);
+export interface Hooks {
+  apiFetch?: ApiFetch;
+  getCurrentTime?: () => number;
+  saveSession?: SaveSession;
+}
+
+export function login(
+  params: LoginParams,
+  hooks: Hooks = {},
+): Promise<Session> {
+  return authFetch({
+    // expanding to avoid globing of all env parameters
+    audience: params.audience,
+    clientId: params.clientId,
+    clientSecret: params.clientSecret,
+    domain: params.domain,
+    password: params.password,
+    realm: params.realm,
+    username: params.username,
+
+    // static parameters from the API
+    grantType: "http://auth0.com/oauth/grant-type/password-realm",
+    scope: "offline_access",
+  }, hooks);
+}
+
+export function refresh(params: RefreshParams, hooks: Hooks = {}) {
+  return authFetch({
+    // expanding to avoid globing of all env parameters
+    clientId: params.clientId,
+    clientSecret: params.clientSecret,
+    domain: params.domain,
+    refreshToken: params.refreshToken,
+
+    // static parameters from the API
+    grantType: "refresh_token",
+  }, hooks);
+}
+
+export async function authFetch(
+  params: Params,
+  {
+    apiFetch = fetch,
+    getCurrentTime = Date.now,
+    saveSession = implementation,
+  }: Hooks = {},
+): Promise<Session> {
+  const valiationErrors = validateParams(params);
+  if (valiationErrors.length) {
+    return Promise.reject(
+      new Error(`parameter validation failed\n\n${valiationErrors.join("\n")}`),
+    );
   }
 
   const url = `https://${params.domain}/oauth/token`;
@@ -72,17 +96,8 @@ export async function authFetch(params: Params): Promise<boolean> {
     "Content-Type": "application/json",
   };
 
-  console.debug(
-    {
-      url,
-      body: data,
-      headers,
-      method,
-    },
-  );
-
-  const now = Date.now();
-  const response = await fetch(
+  const now = getCurrentTime();
+  const response = await apiFetch(
     url,
     {
       body,
@@ -91,16 +106,18 @@ export async function authFetch(params: Params): Promise<boolean> {
     },
   );
 
+  const { status, statusText } = response;
   const sessionRaw = await response.json();
   const session = <Session> <unknown> convertToCamelCase(sessionRaw);
-  session.expiresAt = new Date(now + session.expiresIn);
 
-  if (response.status == 200) {
-    await saveSession(session);
-    console.log(session);
-  } else {
-    console.error(session);
+  if (status !== 200) {
+    const details = JSON.stringify(session, null, 2);
+    const error = new Error(
+      `request failed: ${response.status} ${response.statusText}\n\n${details}`,
+    );
+    return Promise.reject(error);
   }
 
-  return Promise.resolve(true);
+  session.expiresAt = new Date(now + session.expiresIn);
+  return saveSession(session);
 }

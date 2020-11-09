@@ -2,6 +2,25 @@
 
 import config from "./Config.ts";
 
+export interface Session {
+  accessToken: string;
+  expiresAt: Date;
+  expiresIn: number;
+  refreshToken: string;
+  tokenType: string;
+}
+
+export interface LoadSession {
+  (sessionFilePath?: string): Promise<Session>;
+}
+
+export interface SaveSession {
+  (
+    session: Session,
+    sessionFilePath?: string,
+  ): Promise<Session>;
+}
+
 export function getSessionFilePath(clientId: string = config.clientId): string {
   const home = Deno.env.get("HOME") ?? "";
 
@@ -9,15 +28,7 @@ export function getSessionFilePath(clientId: string = config.clientId): string {
     throw new Error(`required parameter clientId is empty`);
   }
 
-  return `${home}/auth0cli-${clientId}.json`;
-}
-
-export interface Session {
-  accessToken: string;
-  expiresAt: Date;
-  expiresIn: number;
-  refreshToken: string;
-  tokenType: string;
+  return `${home}/.auth0cli-${clientId}.json`;
 }
 
 export async function loadSession(
@@ -34,7 +45,10 @@ export async function loadSession(
 export async function saveSession(
   session: Session,
   sessionFilePath: string = getSessionFilePath(),
-): Promise<void> {
+): Promise<Session> {
+  const previous = await loadSession(sessionFilePath);
+  session = { ...previous, ...session };
   const data = JSON.stringify(session, null, 2);
-  return Deno.writeTextFile(sessionFilePath, data);
+  await Deno.writeTextFile(sessionFilePath, data);
+  return Promise.resolve(session);
 }

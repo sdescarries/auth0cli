@@ -31,10 +31,10 @@ Deno.test("convertToCamelCase", () => {
 
 Deno.test("validateParams success", () => {
   const res = validateParams({ foo: "foo", bar: "bar" });
-  assertEquals(res, true);
+  assertEquals(res, []);
 });
 
 Deno.test("validateParams failure", () => {
   const res = validateParams({ foo: undefined, bar: "" });
-  assertEquals(res, false);
+  assertEquals(res.length, 2);
 });

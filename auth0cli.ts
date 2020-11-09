@@ -1,30 +1,53 @@
-#!/usr/bin/env deno run --quiet --log-level info --allow-env --allow-net --allow-read --allow-write
+#!/usr/bin/env deno run --quiet --allow-env --allow-net --allow-read --allow-write
 
 import config from "./ts/Config.ts";
 import { login, refresh } from "./ts/Client.ts";
-import { loadSession } from "./ts/Session.ts";
+import { loadSession, Session } from "./ts/Session.ts";
 
-const [cmd, ...args] = Deno.args;
-
-if (cmd != null) {
-  switch (cmd.toLocaleLowerCase()) {
-    case "login":
-      await login(config);
-      break;
-
-    case "refresh": {
-      const session = await loadSession();
-      const { refreshToken } = session;
-
-      await refresh({
-        ...config,
-        refreshToken,
-      });
-      break;
-    }
-
-    default:
-      console.error(`unknown command [${cmd}]`);
-      break;
-  }
+export interface Hooks {
+  log: (message: string) => void;
+  error: (message: string) => void;
 }
+
+export async function doLogin(
+  hooks: Hooks = console,
+): Promise<Session> {
+  const result = await login(config);
+  hooks.log(`Login successful, please handle these tokens carefully`);
+  hooks.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+export async function doRefresh(
+  hooks: Hooks = console,
+): Promise<Session> {
+  const session = await loadSession();
+  const { refreshToken } = session;
+  const result = await refresh({
+    ...config,
+    refreshToken,
+  });
+  hooks.log(`Refresh successful, please handle these tokens carefully`);
+  hooks.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+export function main(
+  [cmd, ...args]: string[],
+  hooks: Hooks = console,
+): Promise<Session | void> {
+  if (cmd != null) {
+    switch (cmd.toLocaleLowerCase()) {
+      case "login":
+        return doLogin(hooks);
+      case "refresh":
+        return doRefresh(hooks);
+      default:
+        hooks.error(`unknown command [${cmd}]`);
+        break;
+    }
+  }
+  return Promise.resolve();
+}
+
+await main(Deno.args);
