@@ -40,3 +40,11 @@ jobs:
 
       - name: Run Tests
         run: deno test -A --unstable --coverage
+        env:
+          AUTH_AUDIENCE: ${{ secrets.AUTH_AUDIENCE }}
+          AUTH_CLIENT_ID: ${{ secrets.AUTH_CLIENT_ID }}
+          AUTH_CLIENT_SECRET: ${{ secrets.AUTH_CLIENT_SECRET }}
+          AUTH_DOMAIN: ${{ secrets.AUTH_DOMAIN }}
+          AUTH_REALM: ${{ secrets.AUTH_REALM }}
+          AUTH_USERNAME: ${{ secrets.AUTH_USERNAME }}
+          AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}

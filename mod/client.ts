@@ -3,47 +3,19 @@ import {
   convertToUnderscore,
   Params,
   validateParams,
-} from "./Helpers.ts";
+} from "./helpers.ts";
 
 import {
-  SaveSession,
-  saveSession as implementation,
+  ClientConfig,
+  LoginParams,
+  MachineParams,
+  RefreshParams,
   Session,
-} from "./Session.ts";
-
-export interface BasicParams {
-  clientId?: string;
-  clientSecret?: string;
-  domain?: string;
-}
-
-export interface LoginParams extends BasicParams {
-  audience?: string;
-  password?: string;
-  realm?: string;
-  username?: string;
-}
-
-export interface RefreshParams extends BasicParams {
-  refreshToken?: string;
-}
-
-export interface ApiFetch {
-  (
-    input: Request | URL | string,
-    init?: RequestInit,
-  ): Promise<Response>;
-}
-
-export interface Hooks {
-  apiFetch?: ApiFetch;
-  getCurrentTime?: () => number;
-  saveSession?: SaveSession;
-}
+} from "./types.ts";
 
 export function machine(
-  params: LoginParams,
-  hooks: Hooks = {},
+  params: MachineParams,
+  config?: ClientConfig,
 ): Promise<Session> {
   return authFetch({
     // expanding to avoid globing of all env parameters
@@ -54,12 +26,12 @@ export function machine(
 
     // static parameters from the API
     grantType: "client_credentials",
-  }, hooks);
+  }, config);
 }
 
 export function login(
   params: LoginParams,
-  hooks: Hooks = {},
+  config?: ClientConfig,
 ): Promise<Session> {
   return authFetch({
     // expanding to avoid globing of all env parameters
@@ -74,10 +46,13 @@ export function login(
     // static parameters from the API
     grantType: "http://auth0.com/oauth/grant-type/password-realm",
     scope: "offline_access",
-  }, hooks);
+  }, config);
 }
 
-export function refresh(params: RefreshParams, hooks: Hooks = {}) {
+export function refresh(
+  params: RefreshParams,
+  config?: ClientConfig,
+) {
   return authFetch({
     // expanding to avoid globing of all env parameters
     clientId: params.clientId,
@@ -87,7 +62,7 @@ export function refresh(params: RefreshParams, hooks: Hooks = {}) {
 
     // static parameters from the API
     grantType: "refresh_token",
-  }, hooks);
+  }, config);
 }
 
 export async function authFetch(
@@ -95,8 +70,9 @@ export async function authFetch(
   {
     apiFetch = fetch,
     getCurrentTime = Date.now,
-    saveSession = implementation,
-  }: Hooks = {},
+    oldSession,
+    saveSession,
+  }: ClientConfig = {},
 ): Promise<Session> {
   const valiationErrors = validateParams(params);
   if (valiationErrors.length) {
@@ -125,16 +101,24 @@ export async function authFetch(
 
   const { status, statusText } = response;
   const sessionRaw = await response.json();
-  const session = <Session> <unknown> convertToCamelCase(sessionRaw);
+  const session = <Session> <unknown> {
+    ...oldSession,
+    ...convertToCamelCase(sessionRaw),
+  };
 
   if (status !== 200) {
     const details = JSON.stringify(session, null, 2);
     const error = new Error(
-      `request failed: ${response.status} ${response.statusText}\n\n${details}`,
+      `request failed: ${status} ${statusText}\n\n${details}`,
     );
     return Promise.reject(error);
   }
 
   session.expiresAt = new Date(now + session.expiresIn);
-  return saveSession(session);
+
+  if (saveSession != null) {
+    return saveSession(session);
+  }
+
+  return Promise.resolve(session);
 }

@@ -1,13 +1,11 @@
-#!/usr/bin/env deno test --unstable --coverage
-
-import { assertEquals } from "https://deno.land/std@0.76.0/testing/asserts.ts";
+import { assertEquals } from "../deps/asserts.ts";
 import {
   convertToCamelCase,
   convertToUnderscore,
   toCamelCase,
   toUnderscore,
   validateParams,
-} from "./Helpers.ts";
+} from "../mod/helpers.ts";
 
 Deno.test("toUnderscore", () => {
   const res = toUnderscore("fooIsTheNewBar");

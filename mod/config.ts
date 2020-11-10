@@ -1,7 +1,7 @@
 #!/usr/bin/env deno run --allow-env --allow-read
 
-import { config as dotEnvLoad } from "https://deno.land/x/dotenv/mod.ts#v1.0.1";
-import { toUnderscore } from "./Helpers.ts";
+import { dotEnvLoad } from "../deps/dotenv.ts";
+import { toUnderscore } from "./helpers.ts";
 
 const dotEnvConfig = dotEnvLoad();
 
