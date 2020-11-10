@@ -4,6 +4,7 @@ import {
   Params,
   validateParams,
 } from "./Helpers.ts";
+
 import {
   SaveSession,
   saveSession as implementation,
@@ -38,6 +39,22 @@ export interface Hooks {
   apiFetch?: ApiFetch;
   getCurrentTime?: () => number;
   saveSession?: SaveSession;
+}
+
+export function machine(
+  params: LoginParams,
+  hooks: Hooks = {},
+): Promise<Session> {
+  return authFetch({
+    // expanding to avoid globing of all env parameters
+    audience: params.audience,
+    clientId: params.clientId,
+    clientSecret: params.clientSecret,
+    domain: params.domain,
+
+    // static parameters from the API
+    grantType: "client_credentials",
+  }, hooks);
 }
 
 export function login(

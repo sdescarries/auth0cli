@@ -1,12 +1,21 @@
 #!/usr/bin/env deno run --quiet --allow-env --allow-net --allow-read --allow-write
 
 import config from "./ts/Config.ts";
-import { login, refresh } from "./ts/Client.ts";
+import { login, machine, refresh } from "./ts/Client.ts";
 import { loadSession, Session } from "./ts/Session.ts";
 
 export interface Hooks {
   log: (message: string) => void;
   error: (message: string) => void;
+}
+
+export async function doMachine(
+  hooks: Hooks = console,
+): Promise<Session> {
+  const result = await machine(config);
+  hooks.log(`Machine successful, please handle these tokens carefully`);
+  hooks.log(JSON.stringify(result, null, 2));
+  return result;
 }
 
 export async function doLogin(
@@ -40,6 +49,8 @@ export function main(
     switch (cmd.toLocaleLowerCase()) {
       case "login":
         return doLogin(hooks);
+      case "machine":
+        return doMachine(hooks);
       case "refresh":
         return doRefresh(hooks);
       default:
