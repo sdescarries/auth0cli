@@ -19,6 +19,10 @@ await Deno.test("bad command", async () => {
   await main(["foo"], hooks);
 });
 
+await Deno.test("machine with current config", async () => {
+  const result = await main(["machine"], hooks);
+});
+
 await Deno.test("login with current config", async () => {
   const result = await main(["login"], hooks);
 });
