@@ -1,2 +1,5 @@
 /.env
-dist
+/build
+/node_modules
+/index.ts
+**/*.js

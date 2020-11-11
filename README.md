@@ -56,6 +56,11 @@ This utility requires the following permissions at runtime:
 deno install -qf --allow-env --allow-net --allow-read --allow-write auth0cli.ts
 ```
 
+Install directly from github:
+
+```sh
+deno install -qf --allow-env --allow-net --allow-read --allow-write https://raw.githubusercontent.com/sdescarries/auth0cli/v1.0.0/auth0cli.ts
+```
 
 ## Usage
 
@@ -89,4 +94,12 @@ Refresh successful, please handle these tokens carefully
   "tokenType": "Bearer",
   "expiresAt": "2020-11-09T19:41:40.193Z"
 }
+```
+
+## Testing
+
+Make sure your environment is set and run the following:
+
+```sh
+deno test -A --unstable --coverage
 ```

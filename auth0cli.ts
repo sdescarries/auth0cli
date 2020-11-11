@@ -6,6 +6,7 @@ import { login, machine, refresh } from "./mod/client.ts";
 const sessionFilePath = getSessionFilePath(params.clientId);
 
 export const config = {
+  apiFetch: fetch,
   logger: <Logger> console,
   loadSession: () => loadSession(sessionFilePath),
   saveSession: (s: Session) => saveSession(s, sessionFilePath),

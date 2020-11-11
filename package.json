@@ -1,0 +1,20 @@
+{
+  "name": "@sdescarries/auth0cli",
+  "description": "Auth0 Client for the Resource Owner Password API",
+  "version": "1.0.0",
+  "license": "MIT",
+  "files": [
+    "**/*.js",
+    "**/*.ts"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "deno run --allow-write --allow-run ./build.ts"
+  },
+  "devDependencies": {
+    "typescript": "4.0.5"
+  }
+}

@@ -6,8 +6,6 @@ export interface Session {
   tokenType: string;
 }
 
-console;
-
 export interface LoadSession {
   (): Promise<Session>;
 }
