@@ -58,27 +58,39 @@ export function refresh(
     clientId: params.clientId,
     clientSecret: params.clientSecret,
     domain: params.domain,
-    refreshToken: params.refreshToken,
+
+    // stub to be filled by old session
+    refreshToken: "",
 
     // static parameters from the API
     grantType: "refresh_token",
   }, config);
 }
 
+const stubLoadSession = () => Promise.resolve(<Session> ({}));
+const stubSaveSession = (session: Session) =>
+  Promise.resolve(<Session> (session));
+
 export async function authFetch(
-  params: Params,
-  {
+  { ...params }: Params,
+  config?: ClientConfig,
+): Promise<Session> {
+  const {
     apiFetch = fetch,
     getCurrentTime = Date.now,
-    oldSession,
-    saveSession,
-  }: ClientConfig = {},
-): Promise<Session> {
-  const valiationErrors = validateParams(params);
+    loadSession = stubLoadSession,
+    saveSession = stubSaveSession,
+    logger = console,
+  } = config || {};
+
+  const oldSession = <Params> <unknown> await loadSession();
+  const valiationErrors = validateParams(params, oldSession);
+
   if (valiationErrors.length) {
-    return Promise.reject(
-      new Error(`parameter validation failed\n\n${valiationErrors.join("\n")}`),
+    const error = new Error(
+      `parameter validation failed\n\n${valiationErrors.join("\n")}`,
     );
+    return Promise.reject(error);
   }
 
   const url = `https://${params.domain}/oauth/token`;
@@ -115,10 +127,7 @@ export async function authFetch(
   }
 
   session.expiresAt = new Date(now + session.expiresIn);
+  logger.info(JSON.stringify(session, null, 2));
 
-  if (saveSession != null) {
-    return saveSession(session);
-  }
-
-  return Promise.resolve(session);
+  return saveSession(session);
 }

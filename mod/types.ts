@@ -6,15 +6,14 @@ export interface Session {
   tokenType: string;
 }
 
+console;
+
 export interface LoadSession {
-  (sessionFilePath?: string): Promise<Session>;
+  (): Promise<Session>;
 }
 
 export interface SaveSession {
-  (
-    session: Session,
-    sessionFilePath?: string,
-  ): Promise<Session>;
+  (session: Session): Promise<Session>;
 }
 
 export interface BasicParams {
@@ -45,9 +44,23 @@ export interface ApiFetch {
   ): Promise<Response>;
 }
 
+export interface Logger {
+  // deno-lint-ignore no-explicit-any
+  debug(...data: any[]): void;
+  // deno-lint-ignore no-explicit-any
+  error(...data: any[]): void;
+  // deno-lint-ignore no-explicit-any
+  info(...data: any[]): void;
+  // deno-lint-ignore no-explicit-any
+  log(...data: any[]): void;
+  // deno-lint-ignore no-explicit-any
+  warn(...data: any[]): void;
+}
+
 export interface ClientConfig {
   apiFetch?: ApiFetch;
   getCurrentTime?: () => number;
-  oldSession?: Session;
+  loadSession?: LoadSession;
   saveSession?: SaveSession;
+  logger?: Logger;
 }

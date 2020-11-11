@@ -31,11 +31,16 @@ export const convertToCamelCase = convertParamsTo(toCamelCase);
 
 export type Params = Record<string, string | undefined>;
 
-export function validateParams(params: Params): string[] {
+export function validateParams(params: Params, fillers: Params = {}): string[] {
   const result: string[] = [];
   for (const key in params) {
     if (params[key] == null || params[key] === "") {
-      result.push(`required parameter [${key}] is not set`);
+      const filler = fillers[key];
+      if (filler == null || filler === "") {
+        result.push(`required parameter [${key}] is not set`);
+      } else {
+        params[key] = filler;
+      }
     }
   }
   return result;
