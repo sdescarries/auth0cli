@@ -27,3 +27,9 @@ export async function saveSession(
   await Deno.writeTextFile(sessionFilePath, data);
   return Promise.resolve(session);
 }
+
+export default {
+  getSessionFilePath,
+  loadSession,
+  saveSession,
+};

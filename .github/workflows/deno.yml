@@ -33,10 +33,7 @@ jobs:
           deno-version: ${{ matrix.deno }} # tests across multiple Deno versions
 
       - name: Cache Dependencies
-        run: deno cache auth0cli.ts
-        
-      - name: Lint Deno Module
-        run: deno fmt --check
+        run: deno cache deps/*.ts
 
       - name: Run Tests
         run: deno test -A --unstable --coverage

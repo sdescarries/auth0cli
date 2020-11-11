@@ -36,3 +36,8 @@ Deno.test("validateParams failure", () => {
   const res = validateParams({ foo: undefined, bar: "" });
   assertEquals(res.length, 2);
 });
+
+Deno.test("validateParams filling", () => {
+  const res = validateParams({ foo: undefined }, { foo: "foo" });
+  assertEquals(res, []);
+});
