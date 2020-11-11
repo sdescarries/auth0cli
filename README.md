@@ -26,20 +26,20 @@ Create an `.env` file or export the following variables with the parameters from
 
 ```sh
 # The API Audience URL of your tenant
-AUTH_AUDIENCE=        
+AUTH_AUDIENCE=
 
 # Properties of the Application
-AUTH_CLIENT_ID=       
+AUTH_CLIENT_ID=
 AUTH_CLIENT_SECRET=
 
 # The tenant domain (example.auth0.com)
-AUTH_DOMAIN=          
+AUTH_DOMAIN=
 
 # Which database connection to use
 AUTH_REALM=
 
 # Your login credentials
-AUTH_USERNAME=        
+AUTH_USERNAME=
 AUTH_PASSWORD=
 ```
 
