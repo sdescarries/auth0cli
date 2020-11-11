@@ -76,12 +76,17 @@ export async function authFetch(
   config?: ClientConfig,
 ): Promise<Session> {
   const {
-    apiFetch = fetch,
+    apiFetch,
     getCurrentTime = Date.now,
     loadSession = stubLoadSession,
     saveSession = stubSaveSession,
-    logger = console,
+    logger,
   } = config || {};
+
+  if (apiFetch == null) {
+    const error = new Error(`missing fetch implementation`);
+    return Promise.reject(error);
+  }
 
   const oldSession = <Params> <unknown> await loadSession();
   const valiationErrors = validateParams(params, oldSession);
@@ -127,7 +132,7 @@ export async function authFetch(
   }
 
   session.expiresAt = new Date(now + session.expiresIn);
-  logger.info(JSON.stringify(session, null, 2));
+  logger?.info(JSON.stringify(session, null, 2));
 
   return saveSession(session);
 }
