@@ -131,7 +131,7 @@ export async function authFetch(
     return Promise.reject(error);
   }
 
-  session.expiresAt = new Date(now + session.expiresIn);
+  session.expiresAt = new Date(now + session.expiresIn * 1000);
   logger?.info(JSON.stringify(session, null, 2));
 
   return saveSession(session);
