@@ -10,13 +10,13 @@ This utility challenges the [Resource Owner Password](https://auth0.com/docs/api
 
 ### DENO
 
-This tools is targeted for [Deno](https://deno.land/). See the [official installation instructions](https://deno.land/) for details.
+This tools is targeted for [Deno](https://deno.land/), see the [official installation instructions](https://deno.land/) for details.
 
 ### Auth0 Regular Web Application
 
 On the Auth0 management site, create an application based on a **regular web application** profile.
 
-- Enable Refresh Token Rotation
+- Enable Refresh Token Rotation (_recommended_)
 - Enable Refresh Token in GRANTS
 - Activate the *needed* Database Connections
 
@@ -43,6 +43,8 @@ AUTH_USERNAME=
 AUTH_PASSWORD=
 ```
 
+> Note that environment variables have precedence over entries in `.env` file.
+
 ## Installing
 
 This utility requires the following permissions at runtime:
@@ -59,17 +61,27 @@ deno install -qf --allow-env --allow-net --allow-read --allow-write auth0cli.ts
 Install directly from github:
 
 ```sh
-deno install -qf --allow-env --allow-net --allow-read --allow-write https://raw.githubusercontent.com/sdescarries/auth0cli/v1.0.0/auth0cli.ts
+deno install -qf --allow-env --allow-net --allow-read --allow-write https://raw.githubusercontent.com/sdescarries/auth0cli/v1.0.1/auth0cli.ts
 ```
 
 ## Usage
 
-### `./auth0cli.ts login`
+### `> auth0cli login`
 
 Initiates a new session and challenges with the username and password. On success the result will be logged to console and the session JSON will be recorded into `~/.auth0cli-<clientId>.json`
 
+### `> auth0cli machine`
+
+Uses the client id and secret for a client grant challenge. This requires the application to be enabled for this flow in the API and usually has lower quotas allowed (1000/month for Auth0). See [client grants](https://auth0.com/docs/api/v2#!/Client_Grants/post_client_grants) for details.
+
+### `> auth0cli refresh`
+
+Loads a cached session from `~/.auth0cli-<clientId>.json` and initiates a refresh token challenge. On success the new tokens and updated expiration will logged to console and the session file will be updated.
+
+
+### Example output
+
 ```JSON
-Login successful, please handle these tokens carefully
 {
   "accessToken": "eyJhbGciOiJSU...",
   "refreshToken": "v1.MaqSwVdfr...",
@@ -80,19 +92,11 @@ Login successful, please handle these tokens carefully
 }
 ```
 
-### `./auth0cli.ts refresh`
+From this output, the `accessToken` and `tokenType` can be copied for instance to build an API request with an authorization header:
 
-Loads a cached session from `~/.auth0cli-<clientId>.json` and initiates a refresh token challenge. On success the new tokens and updated expiration will logged to console and the session file will be updated.
-
-```JSON
-Refresh successful, please handle these tokens carefully
-{
-  "accessToken": "eyJhbGciOiJSU...",
-  "refreshToken": "v1.MaqSwVdfr...",
-  "scope": "offline_access",
-  "expiresIn": 86400,
-  "tokenType": "Bearer",
-  "expiresAt": "2020-11-09T19:41:40.193Z"
+```javascript
+headers: {
+  'Authorization': `${tokenType} ${accessToken}`
 }
 ```
 
