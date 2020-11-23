@@ -15,16 +15,23 @@ export interface Converter {
   (input: string): string;
 }
 
+export function intoObject(
+  result: Record<string, unknown>,
+  [key, value]: unknown[]
+): Record<string, unknown> {
+  result[key as string] = value;
+  return result;
+}
+
 export const convertParamsTo = (converter: Converter) =>
   (
     params: Record<string, string | undefined>,
   ) =>
-    Object.fromEntries(
-      Object.entries(params)
-        .map((
-          [key, value]: [string, string | undefined],
-        ) => [converter(key), value]),
-    );
+    Object.entries(params)
+      .map((
+        [key, value]: [string, string | undefined],
+      ) => [converter(key), value])
+      .reduce(intoObject, {});
 
 export const convertToUnderscore = convertParamsTo(toUnderscore);
 export const convertToCamelCase = convertParamsTo(toCamelCase);
