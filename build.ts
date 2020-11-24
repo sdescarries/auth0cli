@@ -14,7 +14,7 @@ await Deno.run(
     cmd: [
       "./node_modules/.bin/tsc",
       "--target",
-      "es2020",
+      "es6",
       "--lib",
       "es2020",
       "--module",
