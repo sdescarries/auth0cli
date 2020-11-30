@@ -1,5 +1,6 @@
-/.env
-/build
-/node_modules
-/index.ts
 **/*.js
+/.env
+/.gitconfig
+/build
+/index.ts
+/node_modules

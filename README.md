@@ -84,11 +84,10 @@ Loads a cached session from `~/.auth0cli-<clientId>.json` and initiates a refres
 ```JSON
 {
   "accessToken": "eyJhbGciOiJSU...",
+  "expiresAt": "2020-11-09T19:34:46.246Z"
   "refreshToken": "v1.MaqSwVdfr...",
   "scope": "offline_access",
-  "expiresIn": 86400,
   "tokenType": "Bearer",
-  "expiresAt": "2020-11-09T19:34:46.246Z"
 }
 ```
 

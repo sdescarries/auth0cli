@@ -1,7 +1,6 @@
 export interface Session {
   accessToken: string;
   expiresAt: Date;
-  expiresIn: number;
   refreshToken: string;
   tokenType: string;
 }
@@ -56,9 +55,20 @@ export interface Logger {
 }
 
 export interface ClientConfig {
+
+  // A Fetch API compliant implementation
   apiFetch?: ApiFetch;
+
+  // Base64 decoding implementation
+  base64Decode: (str: string) => string;
+
+  // Date.now() implementation
   getCurrentTime?: () => number;
+
+  // Optional logger context equivalent to console
+  logger?: Logger;
+
+  // Auth session persistance
   loadSession?: LoadSession;
   saveSession?: SaveSession;
-  logger?: Logger;
 }

@@ -1,0 +1,44 @@
+name: Bundle
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  Bundle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Deno
+        uses: denolib/setup-deno@v2
+        with:
+          deno-version: v1.x
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+          registry-url: $registry-url(npm)
+
+      - name: Cache Dependencies
+        run: deno cache deps.ts
+
+      - name: Install Node Modules
+        run: yarn install
+
+      - name: Bundle
+        run: yarn build
+
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: bundle
+          path: index.js
