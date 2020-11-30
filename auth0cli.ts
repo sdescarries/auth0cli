@@ -7,6 +7,7 @@ const sessionFilePath = getSessionFilePath(params.clientId);
 
 export const config = {
   apiFetch: fetch,
+  base64Decode: atob,
   logger: <Logger> console,
   loadSession: () => loadSession(sessionFilePath),
   saveSession: (s: Session) => saveSession(s, sessionFilePath),

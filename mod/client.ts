@@ -49,6 +49,10 @@ export function login(
   }, config);
 }
 
+export interface SessionRaw extends Session {
+  expiresIn: number,
+}
+
 export function refresh(
   params: RefreshParams,
   config?: ClientConfig,
@@ -77,6 +81,7 @@ export async function authFetch(
 ): Promise<Session> {
   const {
     apiFetch,
+    base64Decode = () => '{}',
     getCurrentTime = Date.now,
     loadSession = stubLoadSession,
     saveSession = stubSaveSession,
@@ -88,7 +93,7 @@ export async function authFetch(
     return Promise.reject(error);
   }
 
-  const oldSession = <Params> <unknown> await loadSession();
+  const oldSession = <Params><unknown> await loadSession().catch(() => ({}));
   const valiationErrors = validateParams(params, oldSession);
 
   if (valiationErrors.length) {
@@ -106,7 +111,7 @@ export async function authFetch(
     "Content-Type": "application/json",
   };
 
-  const now = getCurrentTime();
+  const now = Math.floor(getCurrentTime() / 1000);
   const response = await apiFetch(
     url,
     {
@@ -118,21 +123,37 @@ export async function authFetch(
 
   const { status, statusText } = response;
   const sessionRaw = await response.json();
-  const session = <Session> <unknown> {
+
+  const {
+    accessToken = '',
+    expiresIn = 30,
+    refreshToken = '',
+    tokenType = 'Bearer',
+  } = <SessionRaw> <unknown> {
     ...oldSession,
     ...convertToCamelCase(sessionRaw),
   };
 
   if (status !== 200) {
-    const details = JSON.stringify(session, null, 2);
+    const details = JSON.stringify(sessionRaw, null, 2);
     const error = new Error(
       `request failed: ${status} ${statusText}\n\n${details}`,
     );
     return Promise.reject(error);
   }
 
-  session.expiresAt = new Date(now + session.expiresIn * 1000);
-  logger?.info(JSON.stringify(session, null, 2));
+  const est = now + expiresIn;
+  const split = accessToken.split('.');
+  const payload = base64Decode(split[1] ?? '');
+  const { exp = est } = JSON.parse(payload);
+  const expiresAt = new Date(exp * 1000);
+  const session = {
+    accessToken,
+    expiresAt,
+    refreshToken,
+    tokenType,
+  };
 
+  logger?.info(JSON.stringify(session, null, 2));
   return saveSession(session);
 }
