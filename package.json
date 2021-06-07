@@ -1,7 +1,7 @@
 {
   "name": "@sdescarries/auth0cli",
   "description": "Auth0 Client for the Resource Owner Password API",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "MIT",
   "files": [
     "**/*.js",
