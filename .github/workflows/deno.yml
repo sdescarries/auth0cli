@@ -36,7 +36,7 @@ jobs:
         run: deno cache deps.ts
 
       - name: Run Tests
-        run: deno test -A --unstable --coverage
+        run: deno test -A --unstable --coverage=results/coverage
         env:
           AUTH_AUDIENCE: ${{ secrets.AUTH_AUDIENCE }}
           AUTH_CLIENT_ID: ${{ secrets.AUTH_CLIENT_ID }}
@@ -45,3 +45,6 @@ jobs:
           AUTH_REALM: ${{ secrets.AUTH_REALM }}
           AUTH_USERNAME: ${{ secrets.AUTH_USERNAME }}
           AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
+
+      - name: Coverage Report
+        run: deno coverage results/coverage
