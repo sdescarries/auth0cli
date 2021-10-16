@@ -12,7 +12,10 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "deno run --allow-write --allow-run ./build.ts"
+    "auth0cli": "deno run -A ./auth0cli.ts",
+    "build": "deno run -A ./build.ts",
+    "test": "deno test -A --coverage=results/coverage",
+    "udd": "udd deps/* --tests='deno test -A'"
   },
   "devDependencies": {
     "typescript": "4.3.2"

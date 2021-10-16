@@ -120,7 +120,7 @@ headers: {
 Make sure your environment is set and run the following:
 
 ```sh
-deno test -A --unstable --coverage=results/coverage
+deno test -A --coverage=results/coverage
 deno coverage results/coverage
 ```
 
@@ -129,6 +129,6 @@ deno coverage results/coverage
 Upgrade all dependencies using [UDD](https://github.com/hayd/deno-udd)
 
 ```sh
-deno install -A -f -n udd https://deno.land/x/udd@0.4.0/main.ts
-udd deps/*
+deno install -A -f -n udd https://deno.land/x/udd@0.5.0/main.ts
+udd deps/* --tests="deno test -A"
 ```
